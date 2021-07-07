@@ -1,0 +1,103 @@
+  <!DOCTYPE html>
+  <meta charset="utf-8" />
+  <title>DOOR COMMANDER 2.0</title>
+  <script language="javascript" type="text/javascript">
+
+  var wsUri = "ws://localhost:8080/xxx";
+  var output;
+
+  function init()
+  {
+    output = document.getElementById("output");
+    wsUri = "ws:" + window.location.host + ":" + window.location.port + "/xxx"    testWebSocket();
+    writeToScreen(wsUri);
+    writeToScreen('test');
+  }
+
+  function testWebSocket()
+  {
+    websocket = new WebSocket(wsUri);
+    websocket.onopen = function(evt) { onOpen(evt) };
+    websocket.onclose = function(evt) { onClose(evt) };
+    websocket.onmessage = function(evt) { onMessage(evt) };
+    websocket.onerror = function(evt) { onError(evt) };
+  }
+
+  function onOpen(evt)
+  {
+    writeToScreen("WebSocket connected");
+  }
+
+  function onClose(evt)
+  {
+    writeToScreen("WebSocket disconnected");
+  }
+
+  function onMessage(evt)
+  {
+    writeToScreen('<span style="color: blue;">RESPONSE: ' + evt.data+'</span>');
+    if (evt.data == "ARM") {
+      document.getElementById("open").disabled="";
+      document.getElementById("close").disabled="";
+    } 
+    if (evt.data == "DISARM") { 
+      document.getElementById("open").disabled="true";
+      document.getElementById("close").disabled="true";
+    }
+    //websocket.close();
+  }
+
+  function onError(evt)
+  {
+    writeToScreen('<span style="color: red;">ERROR:</span> ' + evt.data);
+  }
+
+  function doSend(message)
+  {
+    writeToScreen("SENT: " + message);
+    websocket.send(message);
+  }
+
+  function writeToScreen(message)
+  {
+    var pre = document.createElement("p");
+    pre.style.wordWrap = "break-word";
+    pre.innerHTML = message;
+    output.appendChild(pre);
+  }
+
+window.addEventListener("load", init, false);
+
+  </script>
+
+  <h2 style="text-align:center; width: 400px;">DOOR COMMANDER 1.0</h2>
+<div style="display:grid; 
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-row-gap: 30px;
+  grid-column-gap: 30px;
+  padding: 30px; 
+  width: 400px;
+  ">
+  <button type="button" onclick="doSend('1')">1</button>
+  <button type="button" onclick="doSend('2')">2</button>
+  <button type="button" onclick="doSend('3')">3</button>
+  
+  <button type="button" onclick="doSend('4')">4</button>
+  <button type="button" onclick="doSend('5')">5</button>
+  <button type="button" onclick="doSend('6')">6</button>
+  
+  <button type="button" onclick="doSend('7')">7</button>
+  <button type="button" onclick="doSend('8')">8</button>
+  <button type="button" onclick="doSend('9')">9</button>
+  
+  <button style="grid-colunn: 1; width: 100%" 
+    type="button" onclick="doSend('0')">0</button>
+  
+  <button id="open" type="button" onclick="doSend('OPEN')">OPEN</button>
+  <button id="close" type="button" onclick="doSend('CLOSE')">CLOSE</button>
+  <button type="button" onclick="doSend('STOP')">STOP</button>
+</div>
+  <div id="output"></div>
+          
+
+
