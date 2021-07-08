@@ -9,7 +9,7 @@
   function init()
   {
     output = document.getElementById("output");
-    wsUri = "ws:" + location.host + ":" + "/xxx";
+    wsUri = "ws:" + location.host  + "/xxx";
     testWebSocket();
   }
 
@@ -70,7 +70,16 @@ window.addEventListener("load", init, false);
 
   </script>
 
-  <h2 style="text-align:center; width: 400px;">DOOR COMMANDER 2.0</h2>
+<style>
+  .button {
+    padding: 32px 32px;
+    text-align: center;
+    font-size: 80px;
+    margin: 10px 2px;
+  }
+  </style>
+
+<h2 style="text-align:center; font-size:64px;">DOOR COMMANDER 2.0</h2>
 <div style="display:grid; 
   grid-template-columns: 1fr 1fr 1fr;
   grid-row-gap: 30px;
@@ -78,25 +87,23 @@ window.addEventListener("load", init, false);
   padding: 30px; 
   width: 400px;
   ">
-  <button type="button" onclick="doSend('1')">1</button>
-  <button type="button" onclick="doSend('2')">2</button>
-  <button type="button" onclick="doSend('3')">3</button>
+  <button class="button" onclick="doSend('1')">1</button>
+  <button class="button" onclick="doSend('2')">2</button>
+  <button class="button" onclick="doSend('3')">3</button>
   
-  <button type="button" onclick="doSend('4')">4</button>
-  <button type="button" onclick="doSend('5')">5</button>
-  <button type="button" onclick="doSend('6')">6</button>
+  <button class="button" onclick="doSend('4')">4</button>
+  <button class="button" onclick="doSend('5')">5</button>
+  <button class="button" onclick="doSend('6')">6</button>
   
-  <button type="button" onclick="doSend('7')">7</button>
-  <button type="button" onclick="doSend('8')">8</button>
-  <button type="button" onclick="doSend('9')">9</button>
-  
-  <button style="grid-colunn: 1; width: 100%" 
-    type="button" onclick="doSend('0')">0</button>
-  
-  <button id="open" type="button" onclick="doSend('OPEN')">OPEN</button>
-  <button id="close" type="button" onclick="doSend('CLOSE')">CLOSE</button>
-  <button type="button" onclick="doSend('STOP')">STOP</button>
-</div>
+  <button class="button" onclick="doSend('7')">7</button>
+  <button class="button" onclick="doSend('8')">8</button>
+  <button class="button" onclick="doSend('9')">9</button>
+  <button class="button" style="background-color: lightblue" disabled id="open" onclick="doSend('OPEN')">OPEN</button>
+  <button class="button" onclick="doSend('0')">0</button>
+  <button class="button" style="background-color: lightblue" disabled  id="close" onclick="doSend('CLOSE')">CLOSE</button>
+  <div></div>
+  <button class="button" style="background-color: red" onclick="doSend('STOP')">STOP</button>
+  <div></div></div>
   <div id="output"></div>
           
 
