@@ -31,17 +31,30 @@ wss.on('connection', function connection(ws) {
       mq.publish('door/command', message);
     }
     if (history == '3512') {
-    
       if (message == 'OPEN' || message == 'CLOSE') {
         mq.publish('door/command', message);
       }
     }
-    history = history.concat(message).slice(-4);
+    history = history.concat(message);
     wss.clients.forEach(function each(wsock) {
       if (wsock.readyState === WebSocket.OPEN) {
-        wsock.send(history == '3512' ? 'ARM' : 'DISARM');
+        if (history.length > 4) {
+          for(var n = 0; n < 10; n++) { 
+            wsock.send("removeProperty " + n + " background-color");
+          }
+        }
+        if (parseInt(message) >= 0 && parseInt(message) < 10) {
+          wsock.send("setProperty" + " " + message + " background-color blue");
+        }
+        wsock.send((history == "3512" ? "removeAttribute" : "setAttribute") + " OPEN disabled disabled");
+        wsock.send((history == "3512" ? "removeAttribute" : "setAttribute") + " CLOSE disabled disabled");
+        wsock.send((history == "3512" ? "setProperty" : "removeProperty") + " OPEN background-color green");
+        wsock.send((history == "3512" ? "setProperty" : "removeProperty") + " CLOSE background-color green");
       }
     });
+    if (history.length > 4) {
+      history = message;
+    }
     console.log('history is ' + history);
   });
 });
