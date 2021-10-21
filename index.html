@@ -10,7 +10,7 @@
 
   function secondTick() { 
     var bar = document.getElementById('timeoutBar');
-    bar.style.width = timeoutPercent + "%";
+    bar.style.setProperty("width", timeoutPercent + "%");
     timeoutPercent -= 0.1;
     if (timeoutPercent < 0) {
       websocket.close(); 
@@ -100,23 +100,20 @@ window.addEventListener("load", init, false);
     font-size: 30px;
     margin: 10px 2px;
   }
-  #myProgress {
-    background-color: #ddd;
-  }   
-  #timeoutBar {
-    width: 1%;
-    height: 30px;
-    background-color: black;
-  }
 </style>
 <body>
   <h1><center>DOOR COMMANDER 2.0</center></h1>
-  <div id="myProgress"><div id="timeoutBar"></div></div>
+  <div style = "width 100%; background-color: #ddd;">
+    <div id="timeoutBar" 
+    style="width: 1%; 
+      height: 30px; 
+      background-color:  black;">
+    </div></div>
   <div style="display:grid; 
     grid-template-columns: 1fr 1fr 1fr;
     grid-row-gap: 30px;
     grid-column-gap: 30px;
-    height: 80vh
+    height: calc(60vh);
     padding: 30px; 
     ">
     <button class="button" id="1" onclick="doSend('1')">1</button>
@@ -134,6 +131,14 @@ window.addEventListener("load", init, false);
     <div></div>
     <button class="button" id="STOP" style="background-color: red" onclick="doSend('STOP')">STOP</button> 
     <div></div>
+  </div>
+  <h2>AMPS:</h2>
+  <div style = "width 100%; background-color: #ddd;">
+    <div id="ampsBar" 
+      style="width: 0%; 
+        height: 30px; 
+        background-color: orange;">
+    </div>
   </div>
   <br>
   <div id="output"></div>

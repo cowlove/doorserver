@@ -20,9 +20,14 @@ mq.on('message', function (topic, message, packet) {
   wss.clients.forEach(function each(wsock) {
     if (wsock.readyState === WebSocket.OPEN) {
       wsock.send('MQTT message: ' + s);
+      const f = s.match(/amps (\d+)/);
+      if (f != null && f.length == 2) { 
+        pct = Math.max(0.0, (f[1] - 860) / 300 * 100  );
+        wsock.send("setProperty ampsBar width " + pct + "%");
+      }
     }
   });
-})
+});
 
 wss.on('connection', function connection(ws) {
   ws.on('message', function incoming(message) {
@@ -34,6 +39,9 @@ wss.on('connection', function connection(ws) {
       if (message == 'OPEN' || message == 'CLOSE') {
         mq.publish('door/command', message);
       }
+    }
+    if (history == '9999' && message == "STOP") {
+      mq.publish('door/command', "RESET");
     }
     history = history.concat(message);
     wss.clients.forEach(function each(wsock) {
