@@ -88,7 +88,11 @@ window.addEventListener("load", init, false);
 
 <style>
   #output{
-        border : solid 2px #ff0000; background : #D5D5D5;  padding : 4px; width : 1000px; height : 350px; overflow : auto; 
+        border : solid 2px #ff0000; 
+        background : #D5D5D5;  
+        padding : 4px; 
+        height : 350px; 
+        overflow : auto; 
     }
   .button {
     padding: 15px 15px;
@@ -96,13 +100,7 @@ window.addEventListener("load", init, false);
     font-size: 30px;
     margin: 10px 2px;
   }
-  </style>
-
-<h2 style="text-align:center; font-size:14px;">DOOR COMMANDER 2.0</h2>
-
-<style>
   #myProgress {
-    width: 100%;
     background-color: #ddd;
   }   
   #timeoutBar {
@@ -110,41 +108,33 @@ window.addEventListener("load", init, false);
     height: 30px;
     background-color: black;
   }
-  </style>
-  <body>
+</style>
+<body>
+  <h1><center>DOOR COMMANDER 2.0</center></h1>
   <div id="myProgress"><div id="timeoutBar"></div></div>
-
-
-<div style="display:grid; 
-  grid-template-columns: 1fr 1fr 1fr;
-  grid-row-gap: 30px;
-  grid-column-gap: 30px;
-  padding: 30px; 
-  width: 400px;
-  ">
-  <button class="button" id="1" onclick="doSend('1')">1</button>
-  <button class="button" id="2" onclick="doSend('2')">2</button>
-  <button class="button" id="3" onclick="doSend('3')">3</button>
-  <button class="button" id="4" onclick="doSend('4')">4</button>
-  <button class="button" id="5" onclick="doSend('5')">5</button>
-  <button class="button" id="6" onclick="doSend('6')">6</button>
-  <button class="button" id="7" onclick="doSend('7')">7</button>
-  <button class="button" id="8" onclick="doSend('8')">8</button>
-  <button class="button" id="9" onclick="doSend('9')">9</button>
-  <button class="button" id="OPEN" disabled onclick="doSend('OPEN')">OPEN</button>
-  <button class="button" id="0" onclick="doSend('0')">0</button>
-  <button class="button" id="CLOSE" disabled onclick="doSend('CLOSE')">CLOSE</button>
-  <div></div>
-  <button class="button" id="STOP" style="background-color: red" onclick="doSend('STOP')">STOP</button>
- 
-  <div></div></div>
-
-    
-    <br>
- 
-
-    <div id="output">
-</div>
-          
-
+  <div style="display:grid; 
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-row-gap: 30px;
+    grid-column-gap: 30px;
+    padding: 30px; 
+    ">
+    <button class="button" id="1" onclick="doSend('1')">1</button>
+    <button class="button" id="2" onclick="doSend('2')">2</button>
+    <button class="button" id="3" onclick="doSend('3')">3</button>
+    <button class="button" id="4" onclick="doSend('4')">4</button>
+    <button class="button" id="5" onclick="doSend('5')">5</button>
+    <button class="button" id="6" onclick="doSend('6')">6</button>
+    <button class="button" id="7" onclick="doSend('7')">7</button>
+    <button class="button" id="8" onclick="doSend('8')">8</button>
+    <button class="button" id="9" onclick="doSend('9')">9</button>
+    <button class="button" id="OPEN" disabled onclick="doSend('OPEN')">OPEN</button>
+    <button class="button" id="0" onclick="doSend('0')">0</button>
+    <button class="button" id="CLOSE" disabled onclick="doSend('CLOSE')">CLOSE</button>
+    <div></div>
+    <button class="button" id="STOP" style="background-color: red" onclick="doSend('STOP')">STOP</button> 
+    <div></div>
+  </div>
+  <br>
+  <div id="output"></div>
+</body>            
 
