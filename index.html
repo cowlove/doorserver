@@ -6,17 +6,19 @@
   var wsUri; 
   var output;
   var websocket;
-  var seconds = 10;
+  var timeoutPercent = 100;
 
   function secondTick() { 
-      writeToScreen("timer tick: " + str(seconds));
-      if (seconds-- < 0) {
-        websocket.close(); 
-        writeToScreen("CLOSED");
-      }
+    var bar = document.getElementById('timeoutBar');
+    bar.style.width = timeoutPercent + "%";
+    timeoutPercent -= 0.1;
+    if (timeoutPercent < 0) {
+      websocket.close(); 
+    } else { 
+      setTimeout(secondTick, 50);
+    }
   }
-  var  mv = setInterval(secondTick, 1000);
-
+  
   function init()
   {
     output = document.getElementById("output");
@@ -32,6 +34,7 @@
   function onOpen(evt)
   {
     writeToScreen("WebSocket connected");
+    secondTick();
   }
 
   function onClose(evt)
@@ -96,6 +99,22 @@ window.addEventListener("load", init, false);
   </style>
 
 <h2 style="text-align:center; font-size:14px;">DOOR COMMANDER 2.0</h2>
+
+<style>
+  #myProgress {
+    width: 100%;
+    background-color: #ddd;
+  }   
+  #timeoutBar {
+    width: 1%;
+    height: 30px;
+    background-color: black;
+  }
+  </style>
+  <body>
+  <div id="myProgress"><div id="timeoutBar"></div></div>
+
+
 <div style="display:grid; 
   grid-template-columns: 1fr 1fr 1fr;
   grid-row-gap: 30px;
@@ -120,23 +139,6 @@ window.addEventListener("load", init, false);
  
   <div></div></div>
 
-  <style>
-    #myProgress {
-      width: 100%;
-      background-color: #ddd;
-    }   
-    #myBar {
-      width: 1%;
-      height: 30px;
-      background-color: #04AA6D;
-    }
-    </style>
-    <body>
-    <h1>AMPS</h1>
-    
-    <div id="myProgress">
-      <div id="myBar"></div>
-    </div>
     
     <br>
  
