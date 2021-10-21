@@ -5,22 +5,29 @@
 
   var wsUri; 
   var output;
+  var websocket;
+  var seconds = 10;
+
+  function secondTick() { 
+      writeToScreen("timer tick: " + str(seconds));
+      if (seconds-- < 0) {
+        websocket.close(); 
+        writeToScreen("CLOSED");
+      }
+  }
+  var  mv = setInterval(secondTick, 1000);
 
   function init()
   {
     output = document.getElementById("output");
     wsUri = "ws:" + location.host  + "/xxx";
-    testWebSocket();
-  }
-
-  function testWebSocket()
-  {
     websocket = new WebSocket(wsUri);
     websocket.onopen = function(evt) { onOpen(evt) };
     websocket.onclose = function(evt) { onClose(evt) };
     websocket.onmessage = function(evt) { onMessage(evt) };
     websocket.onerror = function(evt) { onError(evt) };
   }
+
 
   function onOpen(evt)
   {
