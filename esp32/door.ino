@@ -1,77 +1,48 @@
 #include "jimlib.h"
 #include "RollingLeastSquares.h"
-
+#include "TTGO_TS.h"
 //#include <CAN.h>
 //#include <esp_now.h>
 #include "PubSubClient.h"
 
 
-WiFiClient wifiClient;
-PubSubClient mqttClient(wifiClient); 
+//WiFiClient wifiClient;
+//PubSubClient mqttClient(wifiClient); 
 int overCurrent = 0;
 int overCurrentInhibit = 0;
 
+JStuff j;
 
-void mqtt_callback(char* topic, byte* payload, unsigned int length);
+//void mqtt_callback(char* topic, byte* payload, unsigned int length);
 
-void setupMQTT() {
-}
+//void setupMQTT() {
+//}
 
 struct { 
 	int led = 19;
 	int led2 = 02;
-	int l_r2 = 26;
-	int l_r1 = 32; 
+	int l_r1 = 26;
+	int l_r2 = 32; 
 	int amps = 33;
 	int topButton = 36;
 	int midButton = 37;
 	int botButton = 39;
 } pins;
 
-void reconnect() {
-	if (!mqttClient.connected() && WiFi.status() == WL_CONNECTED) {
-		digitalWrite(pins.l_r1, 0);
-		digitalWrite(pins.l_r2, 0);
-		overCurrentInhibit = 200;
-		String clientId = "ESP32Client-";
-		clientId += String(random(0xffff), HEX);
-		IPAddress ip = WiFi.localIP();
-		Serial.printf("LocalIP = '%s'\n", ip.toString().c_str());
-		ip[3] = 1;      
-		if (ip[0] != 0) { 
-			Serial.printf("Reconnecting to MQTT Broker '%s'\n", ip.toString().c_str());
-			mqttClient.setServer(ip, 1883);
-			mqttClient.setCallback(mqtt_callback);
-			if (mqttClient.connect(clientId.c_str())) {
-				Serial.println("Connected.");
-				// subscribe to topic
-				mqttClient.subscribe("door/#");
-			}
-		}
-	}
-}
-
 int door = 0, dir = 0;
 int tdir = 0; // true dir
 int rssi = 0;
-
-#ifdef ESPNOW
-esp_now_peer_info_t dest;
-const static uint8_t broadcastMAC[] = {0xFF, 0xFF,0xFF,0xFF,0xFF,0xFF};
-char dummyData[8];
-int espnowRecvCount = 0;
-#endif
 
 int counter=0, loraRecvCount = 0;
 
 void doorDown() { 
 	dir = 0;
-	door = 1100;
+	door = 1300;
 	overCurrentInhibit = 200;
 }
 void doorUp() { 
 	dir = 1;
-	door = 1100;
+	door = 1300;
 	overCurrentInhibit = 200;
 }
 void doorStop() { 
@@ -106,13 +77,6 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length) {
 	}
 }
 
-#ifdef ESPNOW
-void espnowSend(const char *s) { 
-	esp_err_t result = esp_now_send(broadcastMAC, (uint8_t*) s, strlen(s));
-}
-#endif
-
-//JimWiFi jw;
 EggTimer sec(100);
 int led;
 RollingAverage<int16_t, 200> avgAmps;
@@ -161,40 +125,18 @@ void setup() {
 		printPins();
 	}
 
-    WiFi.mode(WIFI_STA);
-	WiFi.begin("n185ev", "niftyprairie7");
+    //WiFi.mode(WIFI_STA);
+	//WiFi.begin("ChloeNet3", "niftyprairie7");
     
 	for(int n = 0; n < sizeof(doorAmps)/sizeof(doorAmps[0]); n++) { 
 		doorAmps[n].reset();
 	}
-#ifdef ESPNOW
-	esp_err_t r = esp_now_init();
-    Serial.printf("esp_now_init: %s\n", esp_err_to_name(r));
-    esp_now_register_send_cb([](const uint8_t *mac, esp_now_send_status_t status) {});
-    esp_now_register_recv_cb([](const uint8_t *mac, const uint8_t *data, int len) {
-		char buf[128];
-		if (len < sizeof(buf)) {
-			memcpy(buf, data, len);
-			buf[len] = 0;
-			parseCommandText(buf);
-			Serial.printf("esp-now packet '%s'\n", buf);
-	        espnowRecvCount++;
-		}
-    });
-	memset(&dest, 0, sizeof(dest));
-	for (int ii = 0; ii < 6; ++ii) {
-		dest.peer_addr[ii] = (uint8_t)0xff;
-	}
-	dest.channel = 1; // pick a channel
-	dest.encrypt = 0; // no encryption
-	esp_now_add_peer(&dest);
-#endif
-
 	//jw.onConnect([](void) {});
 	//jw.onOTA([](void) {});
 }
 
 void loop() {
+    esp_task_wdt_reset();
 	pinMode(pins.l_r1, OUTPUT);
 	pinMode(pins.l_r2, OUTPUT);
 	pinMode(pins.amps, INPUT);
@@ -283,7 +225,7 @@ void loop() {
 			millis() / 1000.0, door, dir, amps, cLimit, 
 			(int)doorAmps[0].average(), (int)doorAmps[1].average(), (int)doorAmps[2].average());
 		Serial.println(s.c_str());
-		mqttClient.publish("door/debug", s.c_str());
+		//mqttClient.publish("door/debug", s.c_str());
 
 		disDir = dir;
 		disAmps = max(0.0, (amps - 00) / 10.0);
@@ -291,16 +233,13 @@ void loop() {
 		jd.update(false, true);
 		static int loopCount = 0;
 		if (loopCount++ % 10 == 0) { 
-			mqttClient.publish("door/amps", strfmt("%d", amps).c_str());
+			//mqttClient.publish("door/amps", strfmt("%d", amps).c_str());
 			//loraSend(strfmt("test %d", loopCount % 100).c_str());
 			//espnowSend(strfmt("test %d", loopCount % 100).c_str());
 		}
-		if (!mqttClient.connected())
-			reconnect();
 	}
 
-	//jw.run();
-	mqttClient.loop();
+	j.run();
 
 	delay(1);
 }
