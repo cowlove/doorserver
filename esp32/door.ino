@@ -1,9 +1,6 @@
 #include "jimlib.h"
 #include "RollingLeastSquares.h"
 #include "TTGO_TS.h"
-//#include <CAN.h>
-//#include <esp_now.h>
-#include "PubSubClient.h"
 
 
 //WiFiClient wifiClient;
@@ -56,7 +53,7 @@ void parseCommandText(const char *s) {
 }
 
 void mqtt_callback(char* topic, byte* payload, unsigned int length) {
-	//Serial.printf("MQTT recv: '%s' => ", topic);
+	Serial.printf("MQTT recv: '%s' => ", topic);
 	char buf[256];
 	if (length < sizeof(buf)) { 
 		for (int i = 0; i < length; i++) {
@@ -77,11 +74,11 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length) {
 	}
 }
 
-EggTimer sec(100);
 int led;
 RollingAverage<int16_t, 200> avgAmps;
 RollingAverage<int16_t, 200> doorAmps[3], da2;
 
+#if 0
 void LongShortButtonISR();
 class LongShortButton : public LongShortFilter { 
 public:
@@ -103,6 +100,7 @@ std::vector <LongShortButton *> LongShortButton::buttons;
 void LongShortButtonISR() { 
 	LongShortButton::isr();
 }
+#endif 
 
 JDisplay jd(2, 0, 0, false);
 JDisplayItem<int> disTitle(&jd,0,0,"DOORCOMMANDER     2.0", "");
@@ -110,16 +108,17 @@ JDisplayItem<int> disDir(&jd,10,30,"DIR :", "%d");
 JDisplayItem<int> disTime(&jd,10,40,"TIME:", "%04d");
 JDisplayItem<float> disAmps(&jd,10,50,"AMPS:", "%4.1f");
 
+CLI_VARIABLE_INT(book, 1);
+
 void setup() {
 	esp_task_wdt_init(20, true);
 	esp_task_wdt_add(NULL);
 	//WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); //disable brownout detector   
-
-	Serial.begin(921600, SERIAL_8N1);
+	j.begin();
 	jd.begin();
 	jd.clear();
 	disTitle.color.lf = ST7735_RED;
-	jd.tft.setRotation(3);
+	jd.setRotation(3);
 	while(0) { 
 		delay(100);
 		printPins();
@@ -131,11 +130,20 @@ void setup() {
 	for(int n = 0; n < sizeof(doorAmps)/sizeof(doorAmps[0]); n++) { 
 		doorAmps[n].reset();
 	}
+
+	j.cli.on("up", doorUp);
+	j.cli.on("down", doorDown);
+	j.cli.on("stop", doorStop);
+	j.cli.on("UP", doorUp);
+	j.cli.on("DOWN", doorDown);
+	j.cli.on("STOP", doorStop);
+
 	//jw.onConnect([](void) {});
 	//jw.onOTA([](void) {});
 }
 
 void loop() {
+	j.run();
     esp_task_wdt_reset();
 	pinMode(pins.l_r1, OUTPUT);
 	pinMode(pins.l_r2, OUTPUT);
@@ -183,7 +191,8 @@ void loop() {
 				overCurrentInhibit = 200;
 			} else if (t < 3) { 
 				int stop = (doorAmps[0].average() - doorAmps[2].average()) * 1.4 + doorAmps[2].average();
-				Serial.printf("Bottom sense stop %d/%d\n", (int)avgAmps.average(), stop);
+				if (j.hz(50))
+					Serial.printf("Bottom sense stop %d/%d\n", (int)avgAmps.average(), stop);
 				if (avgAmps.average() < stop) { 
 					door = dir = 0;
 				}
@@ -207,7 +216,7 @@ void loop() {
 		digitalWrite(pins.l_r2, 0);
 	}
 
-	if (sec.tick()) {
+	if (j.hz(10)) {
 		pinMode(pins.led, OUTPUT);
 		digitalWrite(pins.led, !digitalRead(pins.led));
 		pinMode(pins.led2, OUTPUT);
@@ -244,3 +253,26 @@ void loop() {
 	delay(1);
 }
 
+#ifdef UBUNTU
+class PinSim : public ESP32sim_pinManager { 
+  public:
+	int doorPos = 0;
+	int analogRead(int p) override { 
+		if (p == ::pins.amps) {
+			if (this->digitalRead(::pins.l_r1) == this->digitalRead(::pins.l_r2)) {
+				return 832;
+			} else if (this->digitalRead(::pins.l_r1) == 1) {
+				doorPos++;
+				if (doorPos < 0) return 930;
+				return doorPos > 100000 ? 1040 + (doorPos - 100000) / 10: 1040;
+			} else { 
+				doorPos -= 2;
+			 	return 920;
+			}
+		}
+		return 12;
+	 }
+} psim;
+
+// ./door_csim --button 2,36 --button 150,39 --seconds 300 
+#endif
