@@ -31,16 +31,16 @@ int tdir = 0; // true dir
 int rssi = 0;
 
 int counter=0, loraRecvCount = 0;
-
+int overCurrentGracePeriod = 500;
 void doorDown() { 
 	dir = 0;
 	door = 1300;
-	overCurrentInhibit = 200;
+	overCurrentInhibit = overCurrentGracePeriod;
 }
 void doorUp() { 
 	dir = 1;
 	door = 1300;
-	overCurrentInhibit = 200;
+	overCurrentInhibit = overCurrentGracePeriod;
 }
 void doorStop() { 
 	dir = 0; door = 0;
@@ -114,6 +114,9 @@ void setup() {
 	esp_task_wdt_init(20, true);
 	esp_task_wdt_add(NULL);
 	//WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); //disable brownout detector   
+	j.mqtt.server = "192.168.4.1";
+        j.mqtt.active = true;
+
 	j.begin();
 	jd.begin();
 	jd.clear();
@@ -137,6 +140,12 @@ void setup() {
 	j.cli.on("UP", doorUp);
 	j.cli.on("DOWN", doorDown);
 	j.cli.on("STOP", doorStop);
+        j.cli.on("open", doorUp);
+        j.cli.on("close", doorDown);
+        j.cli.on("OPEN", doorUp);
+        j.cli.on("CLOSE", doorDown);
+
+
 
 	//jw.onConnect([](void) {});
 	//jw.onOTA([](void) {});
@@ -164,6 +173,7 @@ void loop() {
 		cLimit = doorAmps[2].average() + (doorAmps[1].average() - doorAmps[2].average()) * 1.25;
 	}
 	cLimit = min(1150, cLimit);
+	cLimit = 1150; // TMP
 
 	if (door && overCurrentInhibit <= 0 && (avgAmps.average() > cLimit || avgAmps.average() < 500)) {
 		Serial.println("Overcurrent stop");
@@ -188,7 +198,7 @@ void loop() {
 			if (t < 1) { 
 				digitalWrite(pins.l_r1, 0);
 				digitalWrite(pins.l_r2, 0);
-				overCurrentInhibit = 200;
+				overCurrentInhibit = overCurrentGracePeriod;
 			} else if (t < 3) { 
 				int stop = (doorAmps[0].average() - doorAmps[2].average()) * 1.4 + doorAmps[2].average();
 				if (j.hz(50))
@@ -202,7 +212,7 @@ void loop() {
 			} else if (t < 15) {
 				digitalWrite(pins.l_r1, 0);
 				digitalWrite(pins.l_r2, 0);
-				overCurrentInhibit = 200;
+				overCurrentInhibit = overCurrentGracePeriod;
 			} else { 
 				digitalWrite(pins.l_r1, 0);
 				digitalWrite(pins.l_r2, 1);
@@ -233,7 +243,9 @@ void loop() {
 		std::string s = strfmt("%07.2f door %d dir %d amps %05d/%05d d0:%05d d1:%05d d2:%05d", 
 			millis() / 1000.0, door, dir, amps, cLimit, 
 			(int)doorAmps[0].average(), (int)doorAmps[1].average(), (int)doorAmps[2].average());
-		Serial.println(s.c_str());
+		if (door > 0 || j.hz(.5)) { 
+			OUT(s.c_str());
+		}
 		//mqttClient.publish("door/debug", s.c_str());
 
 		disDir = dir;
