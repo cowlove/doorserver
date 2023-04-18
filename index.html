@@ -11,11 +11,14 @@
   function secondTick() { 
     var bar = document.getElementById('timeoutBar');
     bar.style.setProperty("width", timeoutPercent + "%");
-    timeoutPercent -= 0.1;
+    timeoutPercent -= 1;
     if (timeoutPercent < 0) {
       websocket.close(); 
     } else { 
-      setTimeout(secondTick, 50);
+      setTimeout(secondTick, 1000);
+      var img = document.getElementById('last');
+      img.src = "last.jpg?" + new Date().getTime();
+      img.reload();  
     }
   }
   
@@ -131,6 +134,10 @@ window.addEventListener("load", init, false);
     <div></div>
     <button class="button" id="STOP" style="background-color: red" onclick="doSend('STOP')">STOP</button> 
     <div></div>
+    <div></div>
+    <div><img id="last" src="last.jpg"</img></div>
+    <div></div>
+
   </div>
   <h2>AMPS:</h2>
   <div style = "width 100%; background-color: #ddd;">
@@ -141,6 +148,7 @@ window.addEventListener("load", init, false);
     </div>
   </div>
   <br>
+
   <div id="output"></div>
-</body>            
+    </body>            
 
