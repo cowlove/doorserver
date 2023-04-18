@@ -33,15 +33,15 @@ wss.on('connection', function connection(ws) {
   ws.on('message', function incoming(message) {
     console.log('received: %s', message);
     if (message == "STOP") { 
-      mq.publish('door/command', message);
+      mq.publish('door/in', message);
     }
     if (history == '3512') {
       if (message == 'OPEN' || message == 'CLOSE') {
-        mq.publish('door/command', message);
+        mq.publish('door/in', message);
       }
     }
     if (history == '9999' && message == "STOP") {
-      mq.publish('door/command', "RESET");
+      mq.publish('door/in', "RESET");
     }
     history = history.concat(message);
     wss.clients.forEach(function each(wsock) {
