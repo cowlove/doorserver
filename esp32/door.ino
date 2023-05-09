@@ -32,18 +32,21 @@ int rssi = 0;
 
 int counter=0, loraRecvCount = 0;
 int overCurrentGracePeriod = 500;
-void doorDown() { 
+string doorDown() { 
 	dir = 0;
 	door = 1300;
 	overCurrentInhibit = overCurrentGracePeriod;
+	return "door down";
 }
-void doorUp() { 
+string doorUp() { 
 	dir = 1;
 	door = 1300;
 	overCurrentInhibit = overCurrentGracePeriod;
+	return "door up";
 }
-void doorStop() { 
+string doorStop() { 
 	dir = 0; door = 0;
+	return "emergency stop";
 }
 
 void parseCommandText(const char *s) { 
@@ -105,7 +108,7 @@ void LongShortButtonISR() {
 JDisplay jd(2, 0, 0, false);
 JDisplayItem<int> disTitle(&jd,0,0,"DOORCOMMANDER     2.0", "");
 JDisplayItem<int> disDir(&jd,10,30,"DIR :", "%d");
-JDisplayItem<int> disTime(&jd,10,40,"TIME:", "%04d");
+JDisplayItem<float> disTime(&jd,10,40,"TIME:", "%5.1f");
 JDisplayItem<float> disAmps(&jd,10,50,"AMPS:", "%4.1f");
 
 CLI_VARIABLE_INT(book, 1);
@@ -140,10 +143,10 @@ void setup() {
 	j.cli.on("UP", doorUp);
 	j.cli.on("DOWN", doorDown);
 	j.cli.on("STOP", doorStop);
-        j.cli.on("open", doorUp);
-        j.cli.on("close", doorDown);
-        j.cli.on("OPEN", doorUp);
-        j.cli.on("CLOSE", doorDown);
+    j.cli.on("open", doorUp);
+    j.cli.on("close", doorDown);
+    j.cli.on("OPEN", doorUp);
+    j.cli.on("CLOSE", doorDown);
 
 
 
@@ -250,7 +253,12 @@ void loop() {
 
 		disDir = dir;
 		disAmps = max(0.0, (amps - 00) / 10.0);
-		disTime = door;
+		if (door == 0) {
+			disTime = millis()/1000;
+		} else {
+			disTime = door;
+		}
+
 		jd.update(false, true);
 		static int loopCount = 0;
 		if (loopCount++ % 10 == 0) { 
@@ -260,6 +268,9 @@ void loop() {
 		}
 	}
 
+	if (millis() > 60 * 15 * 1000 && door == 0) { // reboot every 15 minutes until figure out hang 
+		ESP.restart();
+	}
 	j.run();
 
 	delay(1);

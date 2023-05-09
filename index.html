@@ -69,16 +69,30 @@
     writeToScreen('<span style="color: red;">ERROR:</span> ' + evt.data);
   }
 
-  function doSend(message)
+  function wssSend(message)
   {
     writeToScreen("SENT: " + message);
     websocket.send(message);
   }
 
+
+  function numberButtonPress(message)
+  {
+    document.getElementById(message).style.setProperty("background-color", "aliceblue");
+    wssSend(message)
+  }
+
   function writeToScreen(message)
   {
     var pre = document.createElement("div");
-    pre.style.wordWrap = "break-word";
+    pre.style.wordWrap = "break-word";  function buttonPress(message)
+  {
+    writeToScreen("SENT: " + message);
+    websocket.send(message);
+  }
+
+
+
     pre.innerHTML = message;
     output.appendChild(pre);
     output.scrollTop = output.scrollHeight;
@@ -119,20 +133,20 @@ window.addEventListener("load", init, false);
     height: calc(60vh);
     padding: 30px; 
     ">
-    <button class="button" id="1" onclick="doSend('1')">1</button>
-    <button class="button" id="2" onclick="doSend('2')">2</button>
-    <button class="button" id="3" onclick="doSend('3')">3</button>
-    <button class="button" id="4" onclick="doSend('4')">4</button>
-    <button class="button" id="5" onclick="doSend('5')">5</button>
-    <button class="button" id="6" onclick="doSend('6')">6</button>
-    <button class="button" id="7" onclick="doSend('7')">7</button>
-    <button class="button" id="8" onclick="doSend('8')">8</button>
-    <button class="button" id="9" onclick="doSend('9')">9</button>
-    <button class="button" id="OPEN" disabled onclick="doSend('OPEN')">OPEN</button>
-    <button class="button" id="0" onclick="doSend('0')">0</button>
-    <button class="button" id="CLOSE" disabled onclick="doSend('CLOSE')">CLOSE</button>
+    <button class="button" id="1" onclick="numberButtonPress('1')">1</button>
+    <button class="button" id="2" onclick="numberButtonPress('2')">2</button>
+    <button class="button" id="3" onclick="numberButtonPress('3')">3</button>
+    <button class="button" id="4" onclick="numberButtonPress('4')">4</button>
+    <button class="button" id="5" onclick="numberButtonPress('5')">5</button>
+    <button class="button" id="6" onclick="numberButtonPress('6')">6</button>
+    <button class="button" id="7" onclick="numberButtonPress('7')">7</button>
+    <button class="button" id="8" onclick="numberButtonPress('8')">8</button>
+    <button class="button" id="9" onclick="numberButtonPress('9')">9</button>
+    <button class="button" id="OPEN" disabled onclick="wssSend('OPEN')">OPEN</button>
+    <button class="button" id="0" onclick="numberButtonPress('0')">0</button>
+    <button class="button" id="CLOSE" disabled onclick="wssSend('CLOSE')">CLOSE</button>
     <div></div>
-    <button class="button" id="STOP" style="background-color: red" onclick="doSend('STOP')">STOP</button> 
+    <button class="button" id="STOP" style="background-color: red" onclick="wssSend('STOP')">STOP</button> 
     <div></div>
     <div></div>
     <div><img id="last" src="last.jpg"</img></div>
